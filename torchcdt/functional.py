@@ -1,15 +1,17 @@
-import helpers
 import torch
 from torchskradon.functional import skiradon, skradon
 
+from . import helpers
+
 
 def cdt(s, x=None, s_ref=None, x_ref=None, eps=1e-6):
+    device = s.device
     if x is None:
-        x = torch.linspace(0, 1, s.shape[-1])[None, ...]
+        x = torch.linspace(0, 1, s.shape[-1])[None, ...].to(device=device)
     if s_ref is None:
         s_ref = torch.ones_like(s)
     if x_ref is None:
-        x_ref = torch.linspace(0, 1, s_ref.shape[-1])[None, ...]
+        x_ref = torch.linspace(0, 1, s_ref.shape[-1])[None, ...].to(device=device)
     s = helpers.make_positive_density(s, eps=eps)
     s_ref = helpers.make_positive_density(s_ref, eps=eps)
     step_size = (x_ref[..., -1] - x_ref[..., 0]) / (x_ref.shape[-1] - 1)
@@ -31,12 +33,13 @@ def cdt(s, x=None, s_ref=None, x_ref=None, eps=1e-6):
 
 
 def icdt(s_hat, x=None, s_ref=None, x_ref=None, eps=1e-6):
+    device = s_hat.device
     if x is None:
-        x = torch.linspace(0, 1, s_hat.shape[-1])[None, ...]
+        x = torch.linspace(0, 1, s_hat.shape[-1])[None, ...].to(device=device)
     if s_ref is None:
         s_ref = torch.ones_like(s_hat)
     if x_ref is None:
-        x_ref = torch.linspace(0, 1, s_ref.shape[-1])[None, ...]
+        x_ref = torch.linspace(0, 1, s_ref.shape[-1])[None, ...].to(device=device)
     # torch.gradient is not batchable w.r.t. spacing
     grad_s_hat = torch.gradient(s_hat, dim=-1)[0]
     grad_x_ref = torch.gradient(x_ref[:, *((None,) * (s_hat.ndim - 2)), :], dim=-1)[0]
@@ -52,16 +55,19 @@ def icdt(s_hat, x=None, s_ref=None, x_ref=None, eps=1e-6):
     return s
 
 
-def rcdt(s, x=None, s_ref=None, x_ref=None, eps=1e-6, *args):
+def rcdt(s, x=None, s_ref=None, x_ref=None, normalization=None, eps=1e-6, *args):
+    device = s.device
     s_sinogram = torch.transpose(skradon(s, *args, circle=False), -2, -1)
     if x is None:
-        x = torch.linspace(0, 1, s_sinogram.shape[-1])[None, ...]
+        x = torch.linspace(0, 1, s_sinogram.shape[-1])[None, ...].to(device=device)
     if s_ref is None:
         s_ref_sinogram = torch.ones_like(s_sinogram)
     else:
         s_ref_sinogram = torch.transpose(skradon(s_ref, *args, circle=False), -2, -1)
     if x_ref is None:
-        x_ref = torch.linspace(0, 1, s_ref_sinogram.shape[-1])[None, ...]
+        x_ref = torch.linspace(0, 1, s_ref_sinogram.shape[-1])[None, ...].to(
+            device=device
+        )
     s_hat = cdt(
         s_sinogram,
         x,
@@ -69,19 +75,38 @@ def rcdt(s, x=None, s_ref=None, x_ref=None, eps=1e-6, *args):
         x_ref,
         eps=eps,
     )
-    return torch.transpose(s_hat, -2, -1)
+    s = torch.transpose(s_hat, -2, -1)
+    if normalization is None:
+        pass
+    elif normalization == "mean":
+        s_mean = torch.mean(s, dim=-2, keepdim=True)
+        s_std = torch.std(s, dim=-2, keepdim=True)
+        s = (s - s_mean) / s_std
+        s = torch.mean(s, dim=-1, keepdim=True)
+    elif normalization == "max":
+        s_mean = torch.mean(s, dim=-2, keepdim=True)
+        s_std = torch.std(s, dim=-2, keepdim=True)
+        s = (s - s_mean) / s_std
+        s = torch.amax(s, dim=-1, keepdim=True)
+    else:
+        raise ValueError(f"Unknown normalization type: {normalization}")
+
+    return s
 
 
 def ircdt(s_hat, x=None, s_ref=None, x_ref=None, eps=1e-6, *args):
+    device = s_hat.device
     s_hat = torch.transpose(s_hat, -2, -1)
     if x is None:
-        x = torch.linspace(0, 1, s_hat.shape[-1])[None, ...]
+        x = torch.linspace(0, 1, s_hat.shape[-1])[None, ...].to(device=device)
     if s_ref is None:
         s_ref_sinogram = torch.ones_like(s_hat)
     else:
         s_ref_sinogram = torch.transpose(skradon(s_ref, *args, circle=False), -2, -1)
     if x_ref is None:
-        x_ref = torch.linspace(0, 1, s_ref_sinogram.shape[-1])[None, ...]
+        x_ref = torch.linspace(0, 1, s_ref_sinogram.shape[-1])[None, ...].to(
+            device=device
+        )
 
     s_sinogram = icdt(
         s_hat,

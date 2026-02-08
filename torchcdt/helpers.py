@@ -40,7 +40,8 @@ def interp(
 
     m = torch.diff(fp) / torch.diff(xp)  # slope
     b = fp[..., :-1] - m * xp[..., :-1]  # offset
-    indices = torch.searchsorted(xp, x, right=False)
+    # We need to guarantee that x is contiguous in memory (we break contiguity when we transpose)
+    indices = torch.searchsorted(xp, x.contiguous(), right=False)
 
     if extrapolate == "constant":
         # Pad m and b to get constant values outside of xp range

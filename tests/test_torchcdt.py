@@ -1,15 +1,11 @@
-import os
-import sys
-
 import matplotlib.pyplot as plt
 import pytest
 import torch
 from scipy.stats import norm
 
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from torchcdt.functional import cdt, icdt
 
-debug_plot = False
+debug_plot = True
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 N = 1000
 
@@ -27,11 +23,7 @@ def check_cdt(s_ref, x_ref):
         x_ref_ = x_ref
 
     s_hat = cdt(s, x, s_ref, x_ref)
-    phi_inv = (
-        torch.from_numpy(norm.ppf(x_ref_.cpu().numpy()))
-        .unsqueeze(0)
-        .to(device, s_hat.dtype)
-    )
+    phi_inv = torch.from_numpy(norm.ppf(x_ref_.cpu().numpy())).unsqueeze(0).to(device, s_hat.dtype)
     if debug_plot:
         plt.plot(s_hat.squeeze().cpu().numpy())
         plt.plot(phi_inv.squeeze().cpu().numpy())
@@ -40,9 +32,7 @@ def check_cdt(s_ref, x_ref):
 
 
 @pytest.mark.parametrize("s_ref", [None, torch.ones(1, 1, N).to(device)])
-@pytest.mark.parametrize(
-    "x_ref", [None, torch.linspace(0, 1, N).unsqueeze(0).to(device)]
-)
+@pytest.mark.parametrize("x_ref", [None, torch.linspace(0, 1, N).unsqueeze(0).to(device)])
 def test_cdt(s_ref, x_ref):
     check_cdt(s_ref, x_ref)
 
@@ -65,8 +55,55 @@ def check_cdt_icdt(s_ref, x_ref):
 
 
 @pytest.mark.parametrize("s_ref", [None, torch.ones(1, 1, N).to(device)])
-@pytest.mark.parametrize(
-    "x_ref", [None, torch.linspace(0, 1, N).unsqueeze(0).to(device)]
-)
+@pytest.mark.parametrize("x_ref", [None, torch.linspace(0, 1, N).unsqueeze(0).to(device)])
 def test_cdt_icdt(s_ref, x_ref):
     check_cdt_icdt(s_ref, x_ref)
+
+
+def check_cdt_autograd(s_ref, x_ref):
+    x = torch.linspace(-10, 10, N).unsqueeze(0).to(device)
+    s = (
+        (1 / torch.sqrt(torch.tensor(2 * torch.pi)) * torch.exp(-(x**2) / 2))
+        .unsqueeze(0)
+        .to(device)
+    )
+
+    s.requires_grad = True
+    x.requires_grad = True
+    if s_ref is not None:
+        s_ref.requires_grad = True
+    if x_ref is not None:
+        x_ref.requires_grad = True
+    assert torch.autograd.gradcheck(cdt, (s, x, s_ref, x_ref), fast_mode=True, nondet_tol=1e-8)
+
+
+@pytest.mark.parametrize("s_ref", [None, torch.ones(1, 1, N).to(device)])
+@pytest.mark.parametrize("x_ref", [None, torch.linspace(-10, 10, N).unsqueeze(0).to(device)])
+def test_cdt_autograd(s_ref, x_ref):
+    check_cdt_autograd(s_ref, x_ref)
+
+
+def check_icdt_autograd(s_ref, x_ref):
+    x = torch.linspace(-10, 10, N).unsqueeze(0).to(device)
+    s = (
+        (1 / torch.sqrt(torch.tensor(2 * torch.pi)) * torch.exp(-(x**2) / 2))
+        .unsqueeze(0)
+        .to(device)
+    )
+
+    s_hat = cdt(s, x, s_ref, x_ref)
+
+    s_hat.requires_grad = True
+    x.requires_grad = True
+    if s_ref is not None:
+        s_ref.requires_grad = True
+    if x_ref is not None:
+        x_ref.requires_grad = True
+
+    assert torch.autograd.gradcheck(icdt, (s_hat, x, s_ref, x_ref), fast_mode=True, nondet_tol=1e-8)
+
+
+@pytest.mark.parametrize("s_ref", [None, torch.ones(1, 1, N).to(device)])
+@pytest.mark.parametrize("x_ref", [None, torch.linspace(-10, 10, N).unsqueeze(0).to(device)])
+def test_icdt_autograd(s_ref, x_ref):
+    check_icdt_autograd(s_ref, x_ref)

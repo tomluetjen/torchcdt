@@ -2,9 +2,15 @@ import torch
 
 
 def make_positive_density(signal, dim=-1, eps=1e-6):
+    signal = signal + eps
+    signal = signal / torch.sum(signal, dim=dim, keepdim=True)
+    return signal
+
+
+"""def make_positive_density(signal, dim=-1, eps=1e-6):
     signal += eps
     signal /= torch.sum(signal, dim=dim, keepdim=True)
-    return signal
+    return signal"""
 
 
 def interp(
@@ -45,9 +51,7 @@ def interp(
 
     if extrapolate == "constant":
         # Pad m and b to get constant values outside of xp range
-        m = torch.cat(
-            [torch.zeros_like(m)[..., :1], m, torch.zeros_like(m)[..., :1]], dim=-1
-        )
+        m = torch.cat([torch.zeros_like(m)[..., :1], m, torch.zeros_like(m)[..., :1]], dim=-1)
         b = torch.cat([fp[..., :1], b, fp[..., -1:]], dim=-1)
     else:  # extrapolate == 'linear'
         indices = torch.clamp(indices - 1, 0, m.shape[-1] - 1)

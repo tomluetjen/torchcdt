@@ -1,7 +1,7 @@
 import torch
 from torchskradon.functional import skiradon, skradon
 
-from . import helpers
+import torchcdt.helpers as helpers
 
 
 def cdt(s, x=None, s_ref=None, x_ref=None, eps=1e-6):
@@ -65,9 +65,7 @@ def rcdt(s, x=None, s_ref=None, x_ref=None, normalization=None, eps=1e-6, *args)
     else:
         s_ref_sinogram = torch.transpose(skradon(s_ref, *args, circle=False), -2, -1)
     if x_ref is None:
-        x_ref = torch.linspace(0, 1, s_ref_sinogram.shape[-1])[None, ...].to(
-            device=device
-        )
+        x_ref = torch.linspace(0, 1, s_ref_sinogram.shape[-1])[None, ...].to(device=device)
     s_hat = cdt(
         s_sinogram,
         x,
@@ -75,23 +73,23 @@ def rcdt(s, x=None, s_ref=None, x_ref=None, normalization=None, eps=1e-6, *args)
         x_ref,
         eps=eps,
     )
-    s = torch.transpose(s_hat, -2, -1)
+    s_hat = torch.transpose(s_hat, -2, -1)
     if normalization is None:
         pass
     elif normalization == "mean":
-        s_mean = torch.mean(s, dim=-2, keepdim=True)
-        s_std = torch.std(s, dim=-2, keepdim=True)
-        s = (s - s_mean) / s_std
-        s = torch.mean(s, dim=-1, keepdim=True)
+        s_hat_mean = torch.mean(s_hat, dim=-2, keepdim=True)
+        s_hat_std = torch.std(s_hat, dim=-2, keepdim=True)
+        s_hat = (s_hat - s_hat_mean) / s_hat_std
+        s_hat = torch.mean(s_hat, dim=-1, keepdim=True)
     elif normalization == "max":
-        s_mean = torch.mean(s, dim=-2, keepdim=True)
-        s_std = torch.std(s, dim=-2, keepdim=True)
-        s = (s - s_mean) / s_std
-        s = torch.amax(s, dim=-1, keepdim=True)
+        s_hat_mean = torch.mean(s_hat, dim=-2, keepdim=True)
+        s_hat_std = torch.std(s_hat, dim=-2, keepdim=True)
+        s_hat = (s_hat - s_hat_mean) / s_hat_std
+        s_hat = torch.amax(s_hat, dim=-1, keepdim=True)
     else:
         raise ValueError(f"Unknown normalization type: {normalization}")
 
-    return s
+    return s_hat
 
 
 def ircdt(s_hat, x=None, s_ref=None, x_ref=None, eps=1e-6, *args):
@@ -104,9 +102,7 @@ def ircdt(s_hat, x=None, s_ref=None, x_ref=None, eps=1e-6, *args):
     else:
         s_ref_sinogram = torch.transpose(skradon(s_ref, *args, circle=False), -2, -1)
     if x_ref is None:
-        x_ref = torch.linspace(0, 1, s_ref_sinogram.shape[-1])[None, ...].to(
-            device=device
-        )
+        x_ref = torch.linspace(0, 1, s_ref_sinogram.shape[-1])[None, ...].to(device=device)
 
     s_sinogram = icdt(
         s_hat,

@@ -6,18 +6,24 @@ import torchvision
 
 class LinMNIST(torch.utils.data.Dataset):
     def __init__(
-        self, train, num_templates_per_class, num_samples_per_template, transform=None
+        self,
+        train,
+        num_templates_per_class,
+        num_samples_per_template,
+        transform=None,
+        classes=None,
+        shuffle=False,
     ):
-        os.makedirs(os.path.join("examples", "data"), exist_ok=True)
+        os.makedirs("data", exist_ok=True)
         if train is True:
             dataset = torchvision.datasets.MNIST(
-                root=os.path.join("examples", "data"),
+                root="data",
                 train=True,
                 download=True,
             )
         else:
             dataset = torchvision.datasets.MNIST(
-                root=os.path.join("examples", "data"),
+                root="data",
                 train=False,
                 download=True,
             )
@@ -26,7 +32,9 @@ class LinMNIST(torch.utils.data.Dataset):
         self.data = list()
         self.targets = list()
         self.transform = transform
-        for target in range(10):
+        if classes is None:
+            classes = torch.unique(targets)
+        for target in classes:
             idxs = torch.where(targets == target)[0][:num_templates_per_class]
             self.data = self.data + [data[idxs]]
             self.targets = self.targets + [targets[idxs]]
@@ -34,9 +42,13 @@ class LinMNIST(torch.utils.data.Dataset):
         self.data = num_samples_per_template * self.data
         self.targets = num_samples_per_template * self.targets
 
-        perm = torch.randperm(len(self.data))
-        self.data = torch.cat(self.data, dim=0)[perm]
-        self.targets = torch.cat(self.targets, dim=0)[perm]
+        if shuffle is True:
+            perm = torch.randperm(len(self.data))
+            self.data = torch.cat(self.data, dim=0)[perm]
+            self.targets = torch.cat(self.targets, dim=0)[perm]
+        else:
+            self.data = torch.cat(self.data, dim=0)
+            self.targets = torch.cat(self.targets, dim=0)
 
     def __len__(self):
         return len(self.data)

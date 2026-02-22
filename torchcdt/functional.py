@@ -17,7 +17,7 @@ def cdt(s, x=None, s_ref=None, x_ref=None, eps=1e-6):
     step_size = (x_ref[..., -1] - x_ref[..., 0]) / (x_ref.shape[-1] - 1)
     s_cdf = torch.cumsum(s, dim=-1)
     s_ref_cdf = torch.cumsum(s_ref, dim=-1)
-    if s_ref is None:
+    if torch.unique(s_ref).numel() == 1:
         s_hat = helpers.interp(
             torch.broadcast_to(x_ref[:, *((None,) * (s.ndim - 2)), :], s_ref_cdf.shape),
             s_cdf,
@@ -55,15 +55,15 @@ def icdt(s_hat, x=None, s_ref=None, x_ref=None, eps=1e-6):
     return s
 
 
-def rcdt(s, x=None, s_ref=None, x_ref=None, normalization=None, eps=1e-6, *args):
+def rcdt(s, x=None, s_ref=None, x_ref=None, normalization=None, eps=1e-6, **kwargs):
     device = s.device
-    s_sinogram = torch.transpose(skradon(s, *args, circle=False), -2, -1)
+    s_sinogram = torch.transpose(skradon(s, **kwargs), -2, -1)
     if x is None:
         x = torch.linspace(0, 1, s_sinogram.shape[-1])[None, ...].to(device=device)
     if s_ref is None:
         s_ref_sinogram = torch.ones_like(s_sinogram)
     else:
-        s_ref_sinogram = torch.transpose(skradon(s_ref, *args, circle=False), -2, -1)
+        s_ref_sinogram = torch.transpose(skradon(s_ref, **kwargs), -2, -1)
     if x_ref is None:
         x_ref = torch.linspace(0, 1, s_ref_sinogram.shape[-1])[None, ...].to(device=device)
     s_hat = cdt(
@@ -92,7 +92,7 @@ def rcdt(s, x=None, s_ref=None, x_ref=None, normalization=None, eps=1e-6, *args)
     return s_hat
 
 
-def ircdt(s_hat, x=None, s_ref=None, x_ref=None, eps=1e-6, *args):
+def ircdt(s_hat, x=None, s_ref=None, x_ref=None, eps=1e-6, **kwargs):
     device = s_hat.device
     s_hat = torch.transpose(s_hat, -2, -1)
     if x is None:
@@ -100,7 +100,7 @@ def ircdt(s_hat, x=None, s_ref=None, x_ref=None, eps=1e-6, *args):
     if s_ref is None:
         s_ref_sinogram = torch.ones_like(s_hat)
     else:
-        s_ref_sinogram = torch.transpose(skradon(s_ref, *args, circle=False), -2, -1)
+        s_ref_sinogram = torch.transpose(s_ref, -2, -1)
     if x_ref is None:
         x_ref = torch.linspace(0, 1, s_ref_sinogram.shape[-1])[None, ...].to(device=device)
 
@@ -111,6 +111,6 @@ def ircdt(s_hat, x=None, s_ref=None, x_ref=None, eps=1e-6, *args):
         x_ref,
         eps=eps,
     )
-    s = skiradon(torch.transpose(s_sinogram, -2, -1), *args, circle=False)
+    s = skiradon(torch.transpose(s_sinogram, -2, -1), **kwargs)
     s = helpers.make_positive_density(s, dim=(-2, -1), eps=eps)
     return s

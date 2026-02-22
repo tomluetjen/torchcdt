@@ -2,15 +2,9 @@ import torch
 
 
 def make_positive_density(signal, dim=-1, eps=1e-6):
-    signal = signal + eps
-    signal = signal / torch.sum(signal, dim=dim, keepdim=True)
-    return signal
-
-
-"""def make_positive_density(signal, dim=-1, eps=1e-6):
-    signal += eps
-    signal /= torch.sum(signal, dim=dim, keepdim=True)
-    return signal"""
+    signal_pos = signal + eps
+    signal_norm = signal_pos / torch.sum(signal_pos, dim=dim, keepdim=True)
+    return signal_norm
 
 
 def interp(

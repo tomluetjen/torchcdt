@@ -28,6 +28,7 @@ dependencies = ["torch>=2.2", "torchskradon>=0.1.1"]
 tests = [
   "torchvision>=0.17",
   "ruff>=0.6.9",
+  "scipy>=1.11",
   "torchskradon>=0.1.1",
   "matplotlib>=3.8",
   "pytest>=8.2",
@@ -37,6 +38,7 @@ tests = [
 dev = [
   "torchvision>=0.17",
   "ruff>=0.6.9",
+  "scipy>=1.11",
   "torchskradon>=0.1.1",
   "matplotlib>=3.8",
   "pytest>=8.2",

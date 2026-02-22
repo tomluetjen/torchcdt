@@ -55,11 +55,13 @@ For more detailed examples and use cases, see the `examples` directory:
 ## Other Packages
 This package is inspired by
 
-1. [`Cumulative-Distribution-Transform`](https://github.com/skolouri/Cumulative-Distribution-Transform)
+1. [`PyTransKit`](https://github.com/rohdelab/PyTransKit)
 
-2. [`Radon-Cumulative-Distribution-Transform`](https://github.com/skolouri/Radon-Cumulative-Distribution-Transform)
+2. [`Cumulative-Distribution-Transform`](https://github.com/skolouri/Cumulative-Distribution-Transform)
 
-3. [`NR-CDT`](https://github.com/DrBeckmann/NR-CDT)
+3. [`Radon-Cumulative-Distribution-Transform`](https://github.com/skolouri/Radon-Cumulative-Distribution-Transform)
+
+4. [`NR-CDT`](https://github.com/DrBeckmann/NR-CDT)
 
 ## Acknowledgements
 I would like to thank Dr. Matthias Beckmann for his supervision and guidance during a reading course on this topic.

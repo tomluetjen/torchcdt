@@ -1,3 +1,4 @@
+# https://github.com/rohdelab/PyTransKit/blob/master/tutorials/02_tutorial_rcdt.ipynb
 import matplotlib.pyplot as plt
 import torch
 import torchvision.transforms as transforms

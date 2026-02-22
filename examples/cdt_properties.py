@@ -1,3 +1,4 @@
+# https://github.com/rohdelab/PyTransKit/blob/master/tutorials/01_tutorial_cdt.ipynb
 import matplotlib.pyplot as plt
 import torch
 from scipy.stats import norm

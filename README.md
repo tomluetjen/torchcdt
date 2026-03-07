@@ -1,7 +1,6 @@
 # torchcdt
 
-[![LICENSE](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-
+[![LICENSE](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE) [![Python](https://img.shields.io/badge/python-3.11%20|%203.12%20|%203.13-blue)](#) [![PyPI](https://img.shields.io/pypi/v/torchcdt.svg?label=PyPI&logo=pypi)](https://pypi.org/project/torchcdt/) [![CI](https://github.com/tomluetjen/torchcdt/actions/workflows/python-app.yml/badge.svg?branch=main)](https://github.com/tomluetjen/torchcdt/actions/workflows/python-app.yml) [![Coverage](https://codecov.io/gh/tomluetjen/torchcdt/branch/main/graph/badge.svg)](https://codecov.io/gh/tomluetjen/torchcdt)
 
 ## About
 `torchcdt` implements the (Radon-) Cumulative Distribution Transform [1, 2] and its' inverse with different normalization approaches [3, 4] to enhance feature extraction. All transforms work with batched multi-channel data and are fully differentiable. This allows backpropagation through `torchcdt` transforms to train neural networks or to solve optimization problems with [`torch.optim`](https://docs.pytorch.org/docs/stable/optim.html) (see [examples](#examples)).

@@ -119,7 +119,7 @@ def test_icdt_autograd(s_ref, x_ref):
 
 
 # From hereinafter, we use circe=True to make shapes of s_ref and x_ref more straightforward
-def check_rcdt(s_ref, x_ref):
+def check_rcdt(s_ref, x_ref, normalization):
     s = torch.zeros((1, 1, N, N), device=device)
     x = torch.linspace(-10, 10, N, device=device)
     y = torch.linspace(-10, 10, N, device=device)
@@ -130,7 +130,7 @@ def check_rcdt(s_ref, x_ref):
     yy = yy.unsqueeze(0)
     s[0, 0] = torch.exp(-(xx**2 + yy**2) / 2) / (2 * torch.pi)
     s = helpers.make_positive_density(s, dim=(-2, -1), eps=1e-6)
-    s_hat = rcdt(s, x, s_ref, x_ref, circle=True)
+    s_hat = rcdt(s, x, s_ref, x_ref, circle=True, normalization=normalization)
     if x_ref is None:
         x_ref_ = torch.linspace(0, 1, N).unsqueeze(0).to(device)
     else:
@@ -143,14 +143,17 @@ def check_rcdt(s_ref, x_ref):
             axs.plot(s_hat[0, 0, :, i].cpu().numpy())
         plt.show()
         plt.close()
-
-    assert torch.allclose(s_hat[:, :, 1:-1, :], phi_inv[:, :, 1:-1, None], atol=3e-1)
+    if normalization == "mean" or normalization == "max":
+        assert torch.allclose(s_hat[:, :, 1:-1, :], phi_inv[:, :, 1:-1, None], atol=3e-1)
+    else:
+        assert torch.allclose(s_hat[:, :, 1:-1, :], phi_inv[:, :, 1:-1, None], atol=3e-1)
 
 
 @pytest.mark.parametrize("s_ref", [None, torch.ones(1, 1, N, 180).to(device)])
 @pytest.mark.parametrize("x_ref", [None, torch.linspace(0, 1, N).unsqueeze(0).to(device)])
-def test_rcdt(s_ref, x_ref):
-    check_rcdt(s_ref, x_ref)
+@pytest.mark.parametrize("normalization", [None, "mean", "max"])
+def test_rcdt(s_ref, x_ref, normalization):
+    check_rcdt(s_ref, x_ref, normalization)
 
 
 def check_rcdt_ircdt(s_ref, x_ref):
@@ -183,7 +186,7 @@ def test_rcdt_ircdt(s_ref, x_ref):
     check_rcdt_ircdt(s_ref, x_ref)
 
 
-def check_rcdt_autograd(s_ref, x_ref):
+def check_rcdt_autograd(s_ref, x_ref, normalization):
     s = torch.zeros((1, 1, N, N), device=device)
     x = torch.linspace(-10, 10, N, device=device)
     y = torch.linspace(-10, 10, N, device=device)
@@ -202,16 +205,18 @@ def check_rcdt_autograd(s_ref, x_ref):
     if x is not None:
         x = x.to(torch.double)
         x.requires_grad = True
-
-    assert torch.autograd.gradcheck(rcdt, (s, x, s_ref, x_ref), fast_mode=True, nondet_tol=1e-8)
+    assert torch.autograd.gradcheck(
+        rcdt, (s, x, s_ref, x_ref, normalization), fast_mode=True, nondet_tol=1e-8
+    )
 
 
 @pytest.mark.parametrize(
     "s_ref", [torch.randn(1, 1, N, 180).to(device), torch.ones(1, 1, N, 180).to(device)]
 )
 @pytest.mark.parametrize("x_ref", [torch.linspace(0, 1, N).unsqueeze(0).to(device)])
-def test_rcdt_autograd(s_ref, x_ref):
-    check_rcdt_autograd(s_ref, x_ref)
+@pytest.mark.parametrize("normalization", [None, "mean", "max"])
+def test_rcdt_autograd(s_ref, x_ref, normalization):
+    check_rcdt_autograd(s_ref, x_ref, normalization)
 
 
 def check_ircdt_autograd(s_ref, x_ref):

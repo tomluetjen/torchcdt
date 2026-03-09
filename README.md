@@ -7,7 +7,7 @@
 
 ## Installation
 ```console
-pip install .
+pip install torchcdt
 ```
 
 ## Basic Usage

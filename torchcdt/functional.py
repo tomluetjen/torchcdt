@@ -63,7 +63,7 @@ def rcdt(s, x=None, s_ref=None, x_ref=None, normalization=None, eps=1e-6, **kwar
     if s_ref is None:
         s_ref_sinogram = torch.ones_like(s_sinogram)
     else:
-        s_ref_sinogram = torch.transpose(skradon(s_ref, **kwargs), -2, -1)
+        s_ref_sinogram = torch.transpose(s_ref, -2, -1)
     if x_ref is None:
         x_ref = torch.linspace(0, 1, s_ref_sinogram.shape[-1])[None, ...].to(device=device)
     s_hat = cdt(

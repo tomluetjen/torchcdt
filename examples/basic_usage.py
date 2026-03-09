@@ -1,17 +1,25 @@
-# https://github.com/rohdelab/PyTransKit/blob/master/tutorials/02_tutorial_rcdt.ipynb
 import matplotlib.pyplot as plt
 import torch
-import torchvision.transforms as transforms
 from torchskradon.functional import skradon
 
+import torchcdt.helpers as helpers
 from torchcdt.functional import ircdt, rcdt
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-s = torch.zeros((1, 1, 128, 128), device=device)
-s[0, 0, 64, 64] = 1
-s = transforms.GaussianBlur(6 * 20 + 1, sigma=20)(s)
+N = 128
+s = torch.zeros((1, 1, N, N), device=device)
+x = torch.linspace(-10, 10, N, device=device)
+y = torch.linspace(-10, 10, N, device=device)
+xx, yy = torch.meshgrid(x, y, indexing="ij")
+x = x.unsqueeze(0)
+y = y.unsqueeze(0)
+xx = xx.unsqueeze(0)
+yy = yy.unsqueeze(0)
+s[0, 0] = torch.exp(-(xx**2 + yy**2) / 2) / (2 * torch.pi)
 
+# This is not needed unless we want the reconstruction to have the exact same scaling
+s = helpers.make_positive_density(s, dim=(-2, -1), eps=1e-6)
 s_sinogram = skradon(s, circle=False)
 
 fig, axs = plt.subplots(1, 2, figsize=(15, 5))

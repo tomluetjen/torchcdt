@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "torchcdt"
-version = "0.0.1"
+version = "0.1.0"
 description = "A differentiable implementation of the (Radon-) Cumulative Distribution Transform in PyTorch"
 readme = "README.md"
 requires-python = ">=3.11"

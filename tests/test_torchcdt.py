@@ -143,10 +143,8 @@ def check_rcdt(s_ref, x_ref, normalization):
             axs.plot(s_hat[0, 0, :, i].cpu().numpy())
         plt.show()
         plt.close()
-    if normalization == "mean" or normalization == "max":
-        assert torch.allclose(s_hat[:, :, 1:-1, :], phi_inv[:, :, 1:-1, None], atol=3e-1)
-    else:
-        assert torch.allclose(s_hat[:, :, 1:-1, :], phi_inv[:, :, 1:-1, None], atol=3e-1)
+
+    assert torch.allclose(s_hat[:, :, 1:-1, :], phi_inv[:, :, 1:-1, None], atol=3e-1)
 
 
 @pytest.mark.parametrize("s_ref", [None, torch.ones(1, 1, N, 180).to(device)])

@@ -1,0 +1,19 @@
+cff-version: 1.2.0
+title: torchcdt
+message: "If you use this software, please cite it as below."
+type: software
+authors:
+  - family-names: Lütjen
+    given-names: Tom
+    email: tom.luetjen@icloud.com
+abstract: "A differentiable implementation of the (Radon-) Cumulative Distribution Transform in PyTorch."
+repository-code: "https://github.com/tomluetjen/torchcdt"
+url: "https://pypi.org/project/torchcdt/"
+license: MIT
+version: 0.1.1
+date-released: "2026-04-26"
+keywords:
+  - pytorch
+  - feature-extraction
+  - classification
+  - optimal-transport

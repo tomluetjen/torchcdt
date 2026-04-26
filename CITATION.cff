@@ -9,6 +9,7 @@ authors:
 abstract: "A differentiable implementation of the (Radon-) Cumulative Distribution Transform in PyTorch."
 repository-code: "https://github.com/tomluetjen/torchcdt"
 url: "https://pypi.org/project/torchcdt/"
+doi: "10.5281/zenodo.19799702"
 license: MIT
 version: 0.1.1
 date-released: "2026-04-26"

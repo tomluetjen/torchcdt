@@ -7,7 +7,7 @@ name = "torchcdt"
 version = "0.1.1"
 description = "A differentiable implementation of the (Radon-) Cumulative Distribution Transform in PyTorch"
 readme = "README.md"
-requires-python = ">=3.11"
+requires-python = ">=3.12"
 license = { text = "MIT" }
 authors = [{ name = "Tom Lütjen", email = "tom.luetjen@icloud.com" }]
 keywords = ["pytorch", "classification", "feature-extraction", "optimal-transport"]
@@ -16,9 +16,9 @@ classifiers = [
   "Intended Audience :: Developers",
   "License :: OSI Approved :: MIT License",
   "Programming Language :: Python :: 3 :: Only",
-  "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
   "Topic :: Scientific/Engineering :: Artificial Intelligence",
 ]
 
@@ -57,7 +57,7 @@ exclude = ["tests*", "examples*"]
 
 [tool.ruff]
 line-length = 100
-target-version = "py311"
+target-version = "py312"
 exclude = ["*.ipynb"]
 
 [tool.ruff.lint]
